@@ -3,7 +3,7 @@ import Signal from './../Signal.js';
 
 export default class Egg extends Pokemon {
     constructor(pc, table = "default", seconds = 5, row, col) {
-        super(pc, "egg", 0, "../assets/egg/egg0.png", "../assets/egg/egg0.png", -1, row, col);
+        super(pc, "egg", 0, "/assets/egg/egg0.png", "/assets/egg/egg0.png", -1, row, col);
         this.seconds = seconds;
         this.pokemon = null;
         this.freeze = false;
@@ -62,7 +62,7 @@ export default class Egg extends Pokemon {
             this.init();
             return;
         }
-        
+
         this.pc.replace(this.table, this.col, this.row, this.pokemon);
     }
 
