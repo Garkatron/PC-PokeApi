@@ -50,7 +50,6 @@ export default class PC {
 
         });
 
-
         this.onSelectPokemon$.connect(
             async (row, col) => {
 
