@@ -23,6 +23,9 @@ export default class PC {
 
         this.canMove = false;
 
+        this.newEggMaxSecondsDelay = 600;
+        this.newEggMinSecondsDelay = 200;
+        this.newEggSecondsLeft = 0;
 
         /**
          * ! SIGNALS
@@ -63,7 +66,9 @@ export default class PC {
         this.tableName = document.getElementById("table-name");
         this.buttonNext = document.getElementById("button-next");
         this.askNewTableButton = document.getElementById("ask-new-table-button");
-        
+        this.addEggButton = document.getElementById("add-egg");
+        this.timeRemainingElement = document.getElementById("time-remaining");
+
         this.buttonNext.onclick = this.nextTable.bind(this);
         this.buttonBack.onclick = this.prevTable.bind(this);
         this.askDeleteTableButton.onclick = this.askDeleteTable.bind(this);
@@ -73,17 +78,28 @@ export default class PC {
             this.currentTable = this.tableName.value;
             this.refreshTable();
         };
+        this.addEggButton.onclick = this.addNewEgg.bind(this)
 
+        this.loadState();
         this.loadPokemons()
+
         window.addEventListener("beforeunload", () => {
             this.savePokemons();
+            this.saveState();
         });
-        
+
         setInterval(() => {
             this.savePokemons();
+            this.saveState();
             console.info("Saved pokemons");
-        }, 30000); 
+        }, 30000);
 
+        if (this.newEggSecondsLeft > 0) {
+            this.setRandomNewEggInterval(this.newEggSecondsLeft);
+        } else {
+            this.addEggButton.disabled = false;
+        }
+        this.refreshTable();
     }
 
     async replaceCardBody(pokemon) {
@@ -100,7 +116,6 @@ export default class PC {
             console.log("Name:", a, "\ntable:", b);
         }
     }
-
 
     /**
      * Creates a table bodythis.tableSize
@@ -159,27 +174,27 @@ export default class PC {
         const data = this.createTableBody(this.currentTable);
         this.tableBodyElement.innerHTML = "";
         this.tableBodyElement.appendChild(data);
-        
+
         //this.tableName.innerText = this.currentTable;
     }
 
     updateTablesAvailable() {
         const tablesKeys = Object.keys(this.tables);
         this.tableName.innerHTML = '';
-    
+
         tablesKeys.forEach((n) => {
             const option = document.createElement("option");
-            option.value = n; 
+            option.value = n;
             option.text = n;
-            
-            if (n === this.currentTable) { 
+
+            if (n === this.currentTable) {
                 option.selected = true;
             }
-    
+
             this.tableName.appendChild(option);
         });
     }
-    
+
 
 
     /**
@@ -285,7 +300,7 @@ export default class PC {
         console.info(`Taken pokemon ${swap}`);
 
         swap.playCrie();
-   
+
 
         this.tables[table][row][col] = null;
         this.takenPokemon = swap;
@@ -321,7 +336,7 @@ export default class PC {
         this.takenPokemon.setColRow(col, row);
         this.takenPokemon.setTable(this.currentTable);
         this.tables[table][row][col] = this.takenPokemon;
-        
+
         if (this.takenPokemon instanceof Egg) {
             this.takenPokemon.setFreeze(false);
         }
@@ -351,43 +366,67 @@ export default class PC {
         }
 
         console.table(tables_to_save);
-        sessionStorage.setItem("pokemons", JSON.stringify(tables_to_save));
+        localStorage.setItem("pokemons", JSON.stringify(tables_to_save));
 
     }
-    
+
     loadPokemons() {
-        const tables = sessionStorage.getItem("pokemons");
-    
+        const tables = localStorage.getItem("pokemons");
+
         if (!tables) {
             console.error("Can't load tables");
             return;
         }
-    
+
         try {
             const parsedTables = JSON.parse(tables);
-    
+
             for (const [table, pokemons] of Object.entries(parsedTables)) {
                 console.log("Loading table: " + table);
-    
+
                 this.tables[table] = pokemons.map(row =>
                     row.map(pokemonData => {
                         if (!pokemonData) return null;
-                        
+
                         const parsedData = JSON.parse(pokemonData);
-                                                return parsedData.name === "egg" 
-                            ? Egg.fromJSON(this, parsedData) 
+                        return parsedData.name === "egg"
+                            ? Egg.fromJSON(this, parsedData)
                             : Pokemon.fromJSON(this, parsedData);
                     })
                 );
             }
-    
+
             console.info("Tables loaded successfully!");
-    
+
         } catch (error) {
             console.error("Error parsing tables from sessionStorage:", error);
         }
     }
-    
+
+    saveState() {
+        console.info("Saving newEggSecondsLeft:", this.newEggSecondsLeft);
+        localStorage.setItem("newEggSecondsLeft", this.newEggSecondsLeft);
+    }
+
+    loadState() {
+        const savedTime = localStorage.getItem("newEggSecondsLeft");
+
+        if (savedTime !== null) {
+            const parsedTime = parseInt(savedTime, 10);
+            if (!isNaN(parsedTime)) {
+                this.newEggSecondsLeft = parsedTime;
+                console.info("Loaded state:");
+                console.info("Time left: ", this.newEggSecondsLeft);
+            } else {
+                console.warn("Invalid saved time value, resetting to 0.");
+                this.newEggSecondsLeft = 0;
+            }
+        } else {
+            this.newEggSecondsLeft = 0;
+        }
+    }
+
+
 
     deleteTable(tablename) {
         if (this.tables.hasOwnProperty(tablename)) {
@@ -408,7 +447,7 @@ export default class PC {
 
     askDeleteTable() {
         const name = prompt("Insert table name to delete, or press Enter to cancel", "not default").trim();
-        
+
         if (!name || name === "default") return;
 
         if (!this.deleteTable(name)) {
@@ -418,44 +457,44 @@ export default class PC {
         this.currentTable = "default";
         this.refreshTable();
     }
-    
+
     askCreateTable() {
         const name = prompt("Insert new table name, or press Enter to cancel").trim();
-    
-        if (!name) return; 
-    
+
+        if (!name) return;
+
         if (this.tables.hasOwnProperty(name)) {
             window.alert(`Cannot create table "${name}" because it already exists.`);
             return;
         }
-    
+
         this.createTable(name);
         this.moveToTable(name);
         this.updateTablesAvailable();
     }
-    
+
     nextTable() {
         const keys = Object.keys(this.tables);
         const index = keys.findIndex(n => n === this.currentTable);
-    
-        if (index === -1 || index + 1 >= keys.length) return; 
-        
+
+        if (index === -1 || index + 1 >= keys.length) return;
+
         this.currentTable = keys[index + 1];
         this.updateTablesAvailable();
         this.refreshTable();
     }
-    
+
     prevTable() {
         const keys = Object.keys(this.tables);
         const index = keys.findIndex(n => n === this.currentTable);
-    
-        if (index <= 0) return; 
-        
+
+        if (index <= 0) return;
+
         this.currentTable = keys[index - 1];
         this.updateTablesAvailable();
         this.refreshTable();
     }
-    
+
     async play(path) {
         try {
             const resp = await fetch(path);
@@ -466,7 +505,41 @@ export default class PC {
         } catch (error) {
             console.error("Error: ", error);
         }
-    
+
+    }
+
+    addNewEgg() {
+        this.addEggButton.disabled = true;
+        this.addPokemon(this.currentTable, new Egg(this));
+
+        this.setRandomNewEggInterval();
+    }
+
+    setRandomNewEggInterval(remaining_time = null) {
+        const randomDelay = Math.floor(Math.random() * (this.newEggMaxSecondsDelay - this.newEggMinSecondsDelay + 1)) + this.newEggMinSecondsDelay;
+
+        this.newEggSecondsLeft = remaining_time ? remaining_time : randomDelay;
+
+        this.updateTimeRemaining();
+
+        this.intervalId = setInterval(() => {
+            if (this.newEggSecondsLeft > 0) {
+                this.newEggSecondsLeft--;
+
+                this.updateTimeRemaining();
+            } else {
+                this.addEggButton.disabled = false;
+
+                clearInterval(this.intervalId);
+            }
+
+        }, 1000);
+    }
+
+    updateTimeRemaining() {
+        if (this.timeRemainingElement) {
+            this.timeRemainingElement.textContent = `${this.newEggSecondsLeft}s`;
+        }
     }
 
 }

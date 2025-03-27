@@ -14,10 +14,6 @@ console.log(await Deck.getPokemon("pikachu"));
 
 // await pc.addPokemon("default", await Pokemon.get(deck, pc, "pikachu"));
 
-for (let index = 0; index < 2; index++) {
-    await pc.addPokemon("default", new Egg(pc));
-}
-
 /*
 const slotSelector = document.querySelector('.slot-selector');
 const table = document.querySelector('#poketablebody');
