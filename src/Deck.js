@@ -42,6 +42,14 @@ export default class Deck {
         return Deck.pokemons;
     }
 
+    static async getTypes(pokemon) {
+        const data = await Deck.getPokemon(pokemon);
+        const types = data["types"];
+        const r = types.map(type => type["type"]["name"]);
+        return r;
+    }
+
+
     static async getPokemon(pokemon) {
         try {
             const response = await fetch(`${API_URL}/${pokemon}`);

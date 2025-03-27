@@ -18,7 +18,7 @@ export default class Pokemon {
         this.id = id;
         this.name = name;
         this.tinySpriteSrc = tinySpriteSrc;
-        this.defaultSpriteSrc = defaultSpriteSrc;        
+        this.defaultSpriteSrc = defaultSpriteSrc;
         this.level = level;
         this.row = row;
         this.col = col;
@@ -29,27 +29,30 @@ export default class Pokemon {
         this.isShiny = false;
         this.gifSrc = null;
         this.shinySrc = null;
-    
+        this.types = [];
+
         if (this.name.toLowerCase() === "egg") return;
-            
+
         this.loadPokemonData();
     }
-    
+
     async loadPokemonData() {
         try {
-            const [sprites, spritesTiny, shiny, color, gif] = await Promise.all([
+            const [sprites, spritesTiny, shiny, color, gif, types] = await Promise.all([
                 Deck.getSprites(this.name, false),
                 Deck.getSprites(this.name, true),
                 Deck.getShiny(this.name),
                 Deck.getColor(this.name),
-                Deck.getGif(this.name, "front_default")
-            ]);            
-    
+                Deck.getGif(this.name, "front_default"),
+                Deck.getTypes(this.name)
+            ]);
+
             this.tinySpriteSrc = this.tinySpriteSrc || spritesTiny.front_default || "";
             this.defaultSpriteSrc = this.defaultSpriteSrc || sprites.front_default;
             this.shinySrc = shiny || null;
             this.color = color || "black";
             this.gifSrc = gif || null;
+            this.types = types;
         } catch (error) {
             console.error(`Error loading data for ${this.name}:`, error);
         }
@@ -59,21 +62,21 @@ export default class Pokemon {
         try {
             const [spriteDefault, spriteData] = await Promise.all([Deck.getSprites(name, false), Deck.getSprites(name, true)]);
             const urlSprite = spriteData?.front_default || "";
-            const urlDef = spriteDefault?.front_default;            
-            
+            const urlDef = spriteDefault?.front_default;
+
             return new Pokemon(pc, name, 0, urlSprite, urlDef, 0, 0, 0, "default");
         } catch (error) {
             console.error(`Error fetching Pokémon ${name}:`, error);
             return null;
         }
     }
-    
+
     static async random(pc) {
         try {
             const index = Math.floor(Math.random() * Deck.pokemons.length);
             const pname = Deck.pokemons[index]?.name;
-            
-    
+
+
             if (!pname) throw new Error(`Invalid Pokémon name: ${pname}`);
 
             const [spriteDef, spriteTiny, abilities] = await Promise.all([
@@ -81,17 +84,17 @@ export default class Pokemon {
                 Deck.getSprites(pname, true),
                 Deck.getAbilities(pname)
             ]);
-    
+
             const urlSprite = spriteTiny?.front_default || "";
             const urlSpriteDef = spriteDef?.front_default || "";
-    
+
             return new Pokemon(pc, pname, 0, urlSprite, urlSpriteDef, 0, 0, 0, "default", abilities);
         } catch (error) {
             console.error("Error fetching random Pokémon:", error);
             return null;
         }
     }
-    
+
 
     static async getFullRandom(pc) {
         const pk = await Pokemon.random(pc);
@@ -103,7 +106,7 @@ export default class Pokemon {
     noSprites() {
         return !this.defaultSpriteSrc?.trim()?.length || !this.tinySpriteSrc?.trim()?.length;
     }
-    
+
     setTable(table) {
         this.table = table;
         return this;
@@ -138,6 +141,14 @@ export default class Pokemon {
         levelText.classList.add("card-text");
         levelText.textContent = `Level: ${this.level}`;
 
+        const typesContainer = document.createElement("ul");
+        this.types.forEach(n => {
+            const li = document.createElement("li");
+            li.textContent = n;
+            typesContainer.appendChild(li);
+        });
+
+
         const abilitiesText = document.createElement("p");
         abilitiesText.classList.add("card-text");
         abilitiesText.textContent = "Abilities";
@@ -148,7 +159,7 @@ export default class Pokemon {
 
         let index = 1;
 
-        for (const [ability, description] of Object.entries(this.abilities )) {
+        for (const [ability, description] of Object.entries(this.abilities)) {
             const accordionItem = document.createElement("div");
             accordionItem.classList.add("accordion-item");
 
@@ -240,6 +251,7 @@ export default class Pokemon {
         cardBody.appendChild(img);
         cardBody.appendChild(genderText);
         cardBody.appendChild(levelText);
+        cardBody.appendChild(typesContainer);
         cardBody.appendChild(abilitiesText);
         cardBody.appendChild(abilitiesContainer);
         cardBody.appendChild(movesText);
@@ -254,7 +266,7 @@ export default class Pokemon {
         div.classList.add("tiny-pokemon-container");
         const img = document.createElement("img");
         img.classList.add("tiny-pokemon");
-        
+
         img.src = this.tinySpriteSrc;
         // img.ondragstart="drag(event)";
         // img.draggable = true;
@@ -293,21 +305,21 @@ export default class Pokemon {
         this.level = Math.floor(Math.random() * 100) + 1;
         this.abilities = Deck.getAbilities(this.name);
         this.stats = Deck.getStats(this.name);
-    
+
         const allMoves = await Deck.getMoves(this.name);
         const maxMoves = 4;
-        
+
         this.moves = Object.keys(allMoves)
             .slice(0, maxMoves)
             .reduce((movesDict, move) => {
                 movesDict[move] = allMoves[move];
                 return movesDict;
             }, {});
-    
+
         this.isShiny = Math.random() * 512 < 1;
         return this;
     }
-    
+
 
     genDragHtml(img_src = "", drag_id = null, row = 0, col = 0) {
         return `
@@ -331,7 +343,7 @@ export default class Pokemon {
     }
 
     static fromJSON(pc, json = {}) {
-        
+
         return new Pokemon(pc, json.name, json.id, json.tinySpriteSrc, json.defaultSpriteSrc, json.level, json.row, json.col, json.table, json.abilities, json.moves);
     }
 
