@@ -1,0 +1,225 @@
+/* Fonts */
+@font-face {
+    font-family: Pokemon;
+    src: url("../assets/fonts/Daydream.ttf");
+}
+
+* {
+    font-family: Pokemon;
+}
+
+/* General Styles */
+
+.custom-cursor {
+    cursor: url("../assets/hand-take-item.png"), auto;
+}
+
+/* PokePlatform */
+.PokePlatform {
+    background-image: url("../assets/panel2.png");
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    image-rendering: pixelated;
+    width: 100%;
+    height: 95%;
+    box-shadow: inset -2px -2px 30px rgba(0, 0, 0, 0.8);
+    border-radius: 1%;
+}
+
+/* Image Styles */
+.pixelated {
+    image-rendering: pixelated;
+}
+
+/* Scrollable */
+.vscrollable {
+    overflow-y: scroll;
+}
+
+/* Container Sizes */
+.hm-400 {
+    max-height: 400px;
+}
+
+.wm-400 {
+    max-width: 400px;
+}
+
+.w-400 {
+    width: 400px;
+}
+
+/* Pokemon Photo */
+.poke-photo {
+    width: 80vw;
+    height: 80vw;
+    max-width: 800px;
+    max-height: 800px;
+    min-width: 300px;
+    min-height: 300px;
+    background-size: contain;
+    background-image: url("../assets/panel.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: inset 10px 10px 0px rgba(0, 0, 0, 0.8), inset -10px -10px 0px rgba(255, 255, 255, 0.8);
+    border-radius: 20%;
+}
+
+@media (max-width: 600px) {
+    .poke-photo {
+        width: 90vw;
+        height: 90vw;
+        min-width: 200px;
+        min-height: 200px;
+        border-radius: 10%;
+    }
+}
+
+@media (max-width: 430px) {
+    .poke-photo {
+        width: 80vw;
+        height: 80vw;
+        min-width: 100px;
+        min-height: 100px;
+        border-radius: 10%;
+    }
+}
+
+/* Slot */
+.slot {
+    width: 200px;
+    height: 200px;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-selector {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    top: 72px;
+    justify-content: center;
+    align-items: center;
+    border: 5px rgb(255, 255, 255) solid;
+    border-radius: 10px;
+    pointer-events: none;
+    transition: transform 0.3s ease-out;
+}
+
+.slot-selector img {
+    object-fit: contain;
+    width: 150%;
+    height: 150%;
+}
+
+
+
+.tiny-pokemon {
+    display: block;
+    width: 150%;
+    height: 150%;
+    transform: translateX(-45px) translateY(-50px);
+    pointer-events: none;
+}
+
+@media (max-width : 1920px) {
+    .slot {
+        width: 154px;
+        height: 154px;
+    }
+
+    .slot-selector {
+        width: 154px;
+        height: 154px;
+    }
+
+    .slot-selector .tiny-pokemon {
+        transform: translateX(-45px) translateY(-70px);
+    }
+}
+
+
+
+
+/* Slot Container */
+.slot-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-width: 150px;
+    height: 100%;
+}
+
+/* Draggable */
+.draggable {
+    display: flex;
+    width: 200%;
+    height: 200%;
+    transform: translateX(-45px) translateY(-90px);
+    cursor: move;
+    border-radius: 4px;
+}
+
+/* Transparent Table */
+.table-transparent {
+    background-color: transparent !important;
+    overflow: hidden;
+    border-collapse: collapse;
+}
+
+.table-transparent thead,
+.table-transparent tbody,
+.table-transparent tr,
+.table-transparent th,
+.table-transparent td {
+    background-color: transparent !important;
+    border: none;
+    color: white;
+    padding: 0;
+}
+
+/* Poke Shadow */
+.poke-shadow {
+    position: relative;
+    background-image: url("../assets/25.png");
+    filter: brightness(0);
+    background-size: 178px;
+    background-repeat: no-repeat;
+    border: 1px solid #ccc;
+}
+
+/* Pokemon Table */
+#poketable {
+    justify-content: center;
+}
+
+.pokemon-draggable {
+    z-index: 2000;
+}
+
+.tiny-pokemon-container {
+    position: relative;
+    overflow: visible;
+}
+
+/* PC Table */
+#pc-table {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    z-index: 1000;
+}
+
+@media (max-width: 1280px) {
+    #pc-table {
+        position: static;
+        width: 100%;
+        left: 0;
+    }
+
+    .slot-selector .tiny-pokemon {
+        transform: translateX(-45px) translateY(-90px);
+    }
+}
