@@ -23,8 +23,8 @@ export default class PC {
 
         this.canMove = false;
 
-        this.newEggMaxSecondsDelay = 600;
-        this.newEggMinSecondsDelay = 200;
+        this.newEggMaxSecondsDelay = 200;
+        this.newEggMinSecondsDelay = 100;
         this.newEggSecondsLeft = 0;
 
         /**
